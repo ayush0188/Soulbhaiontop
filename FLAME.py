@@ -1941,7 +1941,7 @@ def process_attack_args(message):
                 raise ValueError(f"❌ 𝗠𝗮𝘅 𝗱𝘂𝗿𝗮𝘁𝗶𝗼𝗻 {max_duration}𝘀 {'(𝗩𝗜𝗣)' if is_vip else '(𝗦𝗽𝗲𝗰𝗶𝗮𝗹)' if is_special else ''}")
                 
             # Start attack
-            start_attack(message, ip, port, duration, threads pps)
+            start_attack(message, ip, port, duration, threads, pps)
             
         except ValueError as e:
             raise ValueError(str(e))
@@ -1972,7 +1972,7 @@ def execute_attack(vps, ip, port, duration, threads, pps):
         if ssh:
             ssh.close()
 
-def run_ssh_attack(vps, ip, port, duration, threads, pps,attack_id, attack_num, chat_id, user_id, is_vip, msg_id, country, flag, protection, is_public=False):
+def run_ssh_attack(vps, ip, port, duration, threads, pps, attack_id, attack_num, chat_id, user_id, is_vip, msg_id, country, flag, protection, is_public=False):
     attack_id_vps = f"{attack_id}-{attack_num}"
     running_attacks[attack_id_vps] = {
         'user_id': user_id,
@@ -2012,7 +2012,7 @@ def run_ssh_attack(vps, ip, port, duration, threads, pps,attack_id, attack_num, 
                 
             time.sleep(0.1)
         
-        update_attack_status(chat_id, msg_id, ip, port, duration, pps threads, 100, country, flag, protection, is_vip, is_public)
+        update_attack_status(chat_id, msg_id, ip, port, duration, pps, threads, 100, country, flag, protection, is_vip, is_public)
         
         # Mark this attack as completed
         running_attacks[attack_id_vps]['completed'] = True
@@ -2058,7 +2058,7 @@ def run_ssh_attack(vps, ip, port, duration, threads, pps,attack_id, attack_num, 
             for aid in target_attacks:
                 running_attacks.pop(aid, None)
 
-def update_attack_status(chat_id, msg_id, ip, port, duration, threads, pps progress, country, flag, protection, is_vip, is_public):
+def update_attack_status(chat_id, msg_id, ip, port, duration, threads, pps, progress, country, flag, protection, is_vip, is_public):
     attack_type = "🌐 PUBLIC" if is_public else "🔥 VIP" if is_vip else "⚡ SPECIAL"
     progress_bar = create_progress_bar(progress)
     elapsed_time = int(duration * (progress/100))

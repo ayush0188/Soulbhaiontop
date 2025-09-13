@@ -1896,7 +1896,7 @@ def process_public_attack_args(message):
                 raise ValueError("❌ 𝗠𝗮𝘅 𝗱𝘂𝗿𝗮𝘁𝗶𝗼𝗻 𝟭𝟮𝟬𝘀 𝗳𝗼𝗿 𝗽𝘂𝗯𝗹𝗶𝗰 𝗮𝘁𝘁𝗮𝗰𝗸𝘀")
                 
             # Start attack with public limitations
-            start_attack(message, ip, port, duration, threads, pps is_public=True)
+            start_attack(message, ip, port, duration, threads, pps, is_public=True)
             
         except ValueError as e:
             raise ValueError(str(e))
